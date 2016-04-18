@@ -21,38 +21,38 @@ type
         procedure BitBtn2Click(Sender: TObject);
         procedure FormCreate(Sender: TObject);
     private
-        function StrOemToAnsi(const aStr : String) : String; // функция конвертирования (кодировки)
-        procedure ShareCatalog(Path: string); // обработка каталога с текстовыми файлами
-        procedure TxtToPict; // Перевод текста в картинки
-        function LinesCount(const Filename: string): integer; // подсчет кол-ва строк в файле
+        function  StrOemToAnsi(const aStr : String) : String; // conversion function (coding)
+        procedure ShareCatalog(Path: string); // processing directory with *.txt files
+        procedure TxtToPict; // translations of text in pictures
+        function  LinesCount(const Filename: string): integer; // counting of number of lines in the file
     public
 
     end;
 
 var
     Form1: TForm1;
-    TempPath: array[0..MAX_PATH] of char; // Глобальная переменная (путь к выбранному каталогу)
-    Pict: TBitmap; // Глобальная переменная под картинку
-    Prog_Dir: string; // Переменная для хранения пути к программе
+    TempPath: array[0..MAX_PATH] of char; // global variable (path to the selected folder)
+    Pict: TBitmap; // global variable for the picture
+    Prog_Dir: string; // the variable to store the path to the program
 implementation
 
 {$R *.dfm}
 
 {
-  +_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_
+  ===================================================================
 
-  Конвертирование документов из АРМ НВП в jpg формат
+   Convert text in jpg format
 
-  +_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_
+  ===================================================================
 }
 
-//Завершаем работу с приложением
+// quit application
 procedure TForm1.BitBtn1Click(Sender: TObject);
 begin
     Application.Terminate;
 end;
 
-//Перекодировка из DOS в ANSI
+// recoding from DOS to ANSI
 function TForm1.StrOemToAnsi(const aStr: String): String;
 begin
     Result := '';
@@ -63,7 +63,7 @@ begin
     OemToChar(PChar(aStr), PChar(Result));
 end;
 
-//Ищем все файлы в каталоге и выводим их в ListBox
+// search all the files in a directory and displays them in ListBox
 procedure TForm1.ShareCatalog(Path: string);
 var
     SR: TSearchRec;
@@ -81,50 +81,50 @@ begin
     end;
 end;
 
-//Конвертируем файлы txt из АРМ НВП в картинки *.jpg
+// convert txt files to image jpg
 procedure TForm1.TxtToPict;
 var
-    f: TextFile;
-    str: string;
-    step: integer;
-    i: integer;
-    str_count: integer;
-    Progress_Count: integer;
+    str_count:integer;
+    Progress_Count:integer;
+
+    step:integer;
+    str:string;
+
+    f:TextFile;
+    i:integer;
 begin
 
-    //Определяем шаг прогресс бара :)
-    Progress_Count:=100 mod ListBox1.Count;
-    ProgressBar1.Step:=Progress_Count;
+    // determine the step progress bar
+    Progress_Count := 100 mod ListBox1.Count;
+    ProgressBar1.Step := Progress_Count;
 
-    //Берем по одному файлу из каталога и конвертируем
-    for i:=0 to ListBox1.Count-1 do
+    // take one file from the directory and convert
+    for i := 0 to ListBox1.Count - 1 do
     begin
+        step := 12; // step back from the line
 
-        step:=12; //шаг отступа от строки
+        // presetting Bitmap
+        Pict := TBitmap.Create;
+        Pict.Canvas.Font.Color := clNavy;
+        Pict.Canvas.Font.Size := 12;
+        str_count := LinesCount(Edit1.Text + '\' + ListBox1.Items.Strings[i]);
+        Pict.Width := 850;
+        Pict.Height := str_count * 28;
 
-        //предварительная настройка BitMap'а
-        Pict:=TBitmap.Create;
-        Pict.Canvas.Font.Color:=clNavy;
-        Pict.Canvas.Font.Size:=12;
-        str_count:=LinesCount(Edit1.Text+'\'+ListBox1.Items.Strings[i]);
-        Pict.Width:=850;
-        Pict.Height:=str_count*28;
-        //-==-=-=-=-=-=-=-=-=END
-
-        AssignFile(f,Edit1.Text+'\'+ListBox1.Items.Strings[i]);
+        AssignFile(f,Edit1.Text + '\' + ListBox1.Items.Strings[i]);
         Reset(f);
         while not eof(f) do
         begin
             Readln(f,str);
-            Pict.Canvas.TextOut(12,step,StrOemToAnsi(str));
-            step:=step+28;
+            Pict.Canvas.TextOut(12, step, StrOemToAnsi(str));
+            step := step + 28;
         end;
         CloseFile(f);
 
-        Pict.Free; //Уничтожаем наш экземпляр TBitMap'а
-        ProgressBar1.Position:=ProgressBar1.Position+Progress_Count; //Прогресс бар в работе
+        Pict.Free;
+        ProgressBar1.Position := ProgressBar1.Position + Progress_Count;
     end;
-    if MessageDlg('Конвертирование завершено!'+#13#10+'Открыть папку с созданными графическими файлами?', mtConfirmation, [mbYes, mbNo], 0)= mrYes then
+    if MessageDlg('Conversion is complete!' + #13#10 + 'Open the folder with the created image files?', mtConfirmation, [mbYes, mbNo], 0) = mrYes then
     begin
         ShellExecute(handle, 'OPEN', PChar(Prog_Dir), nil, nil, SW_SHOWNORMAL);
         Application.Terminate;
@@ -133,7 +133,7 @@ begin
         Application.Terminate;
 end;
 
-//Обзор каталогов (выбор каталога с текстовыми документами)
+// browse the directory (directory selection with text documents)
 procedure TForm1.BitBtn3Click(Sender: TObject);
 var
     TitleName: string;
@@ -144,31 +144,31 @@ begin
     FillChar(BrowseInfo, sizeof(TBrowseInfo), #0);
     BrowseInfo.hwndOwner := Form1.Handle;
     BrowseInfo.pszDisplayName := @DisplayName;
-    TitleName := 'Выберите каталог с текстовыми документами';
+    TitleName := 'Select the folder with text documents';
     BrowseInfo.lpszTitle := PChar(TitleName);
     BrowseInfo.ulFlags := BIF_RETURNONLYFSDIRS;
     lpItemID := SHBrowseForFolder(BrowseInfo);
     if lpItemId <> nil then
     begin
         SHGetPathFromIDList(lpItemID, TempPath);
-        Edit1.Text:=TempPath;
+        Edit1.Text := TempPath;
         ShareCatalog(TempPath);
         GlobalFreePtr(lpItemID);
     end;
 end;
 
-//Конвертируем все файлы из АРМ НВП в картинки
+// convert all files in pictures
 procedure TForm1.BitBtn2Click(Sender: TObject);
 begin
-    if ListBox1.Count=0 then
+    if ListBox1.Count = 0 then
     begin
-        ShowMessage('Отсутствуют файлы для конвертирования !!!'+#13#10+#13#10+'Выберите каталог с файлами из АРМ НВП');
+        ShowMessage('There are no files to convert !!!' + #13#10 + #13#10 + 'Select the folder with the files');
         Exit;
     end;
     TxtToPict;
 end;
 
-//Подсчитываем количество строк в файле (для вычисления высоты картинки)
+// count the number of lines in the file (to calculate the height of the image)
 function TForm1.LinesCount(const Filename: string): integer;
 var
     HFile: THandle;
@@ -187,8 +187,7 @@ begin
             ReadFile(HFile, Buf, 4096, WasRead, nil);
             repeat
                 for i := WasRead downto 1 do
-                    if Buf[i] = 10 then
-                        Inc(Result);
+                    if Buf[i] = 10 then Inc(Result);
                 ReadFile(HFile, Buf, 4096, WasRead, nil);
             until WasRead = 0;
         end;
@@ -196,10 +195,10 @@ begin
     CloseHandle(HFile);
 end;
 
-//Начальные настройки программы
+// initial Setup
 procedure TForm1.FormCreate(Sender: TObject);
 begin
-    GetDir(0,Prog_Dir); //получаем путь к exe'шнику
+    GetDir(0,Prog_Dir); // path to exe file
 end;
 
 end.
